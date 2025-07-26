@@ -4,3 +4,6 @@
 [submodule "fzf-tab"]
 	path = fzf-tab
 	url = https://github.com/Aloxaf/fzf-tab
+[submodule "nvim"]
+	path = nvim
+	url = https://github.com/holdmypotion/nvim
