@@ -1,0 +1,30 @@
+# theme = CyberpunkScarletProtocol
+# Ghostty Configuration
+window-decoration = false
+initial-command = /opt/homebrew/bin/tmux new-session -A -D -s ghostty
+
+# Colors
+background = #101116
+foreground = #00d4b1
+cursor-color = #00d4b1
+background-opacity = 0.9
+# selection-background = #311b92
+# border-color = #00d4b1
+
+# Terminal Colors
+# color0 = #101116
+# color1 = #FF5370
+# color2 = #00FF9C
+# color3 = #fffc58
+# color4 = #00b0ff
+# color5 = #d57bff
+# color6 = #00ffd5
+# color7 = #b4baff
+# color8 = #6766b3
+# color9 = #FF5370
+# color10 = #00FF9C
+# color11 = #e5ff00
+# color12 = #00a2ff
+# color13 = #cc00ff
+# color14 = #08e1d7
+# color15 = #d9ff00

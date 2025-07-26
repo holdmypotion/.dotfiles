@@ -1,0 +1,8 @@
+bindkey -s ^f "tsession\n"
+bindkey -s '\eh' "tsession -s 0\n"
+bindkey -s '\et' "tsession -s 1\n"
+bindkey -s '\en' "tsession -s 2\n"
+bindkey -s '\es' "tsession -s 3\n"
+
+bindkey -s ^e "yazi\n"
+

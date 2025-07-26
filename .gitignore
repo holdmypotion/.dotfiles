@@ -1,0 +1,7 @@
+.config/browseruse
+.config/configstore
+.config/elinks
+.config/github-copilot
+.config/opencode
+
+**/*.log

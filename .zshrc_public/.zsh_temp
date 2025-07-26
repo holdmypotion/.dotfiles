@@ -1,0 +1,12 @@
+## Striker
+export CLIPBOARD_SERVER_HOST="https://copy.strikeraryu.com"
+export CLIPBOARD_SERVER_PASSWORD="copy@60018"
+
+function cget() {
+  local index="${1:-1}"
+  curl -s -H "X-Clipboard-Password: $CLIPBOARD_SERVER_PASSWORD" "$CLIPBOARD_SERVER_HOST/get/$index" | pbcopy
+  echo "Copied clipboard entry #$index to system clipboard"
+}
+
+alias cshare='pbpaste | curl -X POST -H "X-Clipboard-Password: $CLIPBOARD_SERVER_PASSWORD" -H "Content-Type: text/plain" --data-binary @- "$CLIPBOARD_SERVER_HOST/share"'
+alias cpreview='curl -H "X-Clipboard-Password: $CLIPBOARD_SERVER_PASSWORD" "$CLIPBOARD_SERVER_HOST/preview"'

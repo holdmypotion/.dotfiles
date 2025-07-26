@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# -----------------------------
+# Usage:
+#   ./move_and_symlink.sh /Volumes/Silo/scaler ~/devops ~/obsidian ~/projects/ml
+# -----------------------------
+
+if [ $# -lt 2 ]; then
+  echo "❌ Usage: $0 <external_base_path> <source_path1> <source_path2> ..."
+  exit 1
+fi
+
+EXTERNAL_BASE="$1"
+shift  # Now $@ contains only the source paths
+
+# Create external base if it doesn't exist
+mkdir -p "$EXTERNAL_BASE"
+
+for SOURCE in "$@"; do
+  if [ -e "$SOURCE" ]; then
+    BASENAME=$(basename "$SOURCE")
+    DEST="$EXTERNAL_BASE/$BASENAME"
+
+    # Move the file or folder
+    echo "🚚 Moving $SOURCE → $DEST"
+    mv "$SOURCE" "$DEST"
+
+    # Create symlink at original path
+    echo "🔗 Creating symlink $SOURCE → $DEST"
+    ln -s "$DEST" "$SOURCE"
+  else
+    echo "⚠️  Skipping: $SOURCE does not exist"
+  fi
+done
+
+echo "✅ All done!"

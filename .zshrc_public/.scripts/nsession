@@ -1,0 +1,19 @@
+#!/bin/bash
+if [[ $# -eq 1 ]]; then
+    selected=$1
+else
+    selected=$(find ~/vault ~/workspace ~/personal ~/.config ~/White_Room ~/personal/open_source /Volumes/Silo/personal /Volumes/Silo/scaler ~/open_source/ ~/personal/neovim/ -mindepth 1 -maxdepth 1 -type d | fzf)
+fi
+if [[ -z $selected ]]; then
+    exit 0
+fi
+selected_name=$(LC_ALL=C basename "$selected" | LC_ALL=C tr . _)
+
+# Check if session exists and append random string if it does
+while tmux has-session -t "$selected_name" 2>/dev/null; do
+    random_string=$(LC_ALL=C head /dev/urandom | LC_ALL=C tr -dc A-Za-z0-9 | head -c 4)
+    selected_name="${selected_name}_${random_string}"
+done
+
+TMUX= tmux new-session -s $selected_name -c $selected
+tmux switch-client -t $selected_name

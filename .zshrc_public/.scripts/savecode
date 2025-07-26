@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <file_path> <directory_path>"
+    exit 1
+fi
+
+file_path="$1"
+directory_path="$2"
+
+if [ ! -f "$file_path" ]; then
+    echo "Error: File '$file_path' does not exist"
+    exit 1
+fi
+
+mkdir -p "$directory_path"
+cp "$file_path" "$directory_path"
+echo "File copied successfully to $directory_path"

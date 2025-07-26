@@ -1,0 +1,144 @@
+#!/bin/bash
+
+# tf_setup.sh - Script to create a basic Terraform project structure
+
+# Check if a directory argument was provided
+if [ $# -eq 0 ]; then
+  TARGET_DIR="."
+  echo "No directory specified, using current directory."
+else
+  TARGET_DIR="$1"
+  # Create the directory if it doesn't exist
+  mkdir -p "$TARGET_DIR"
+  echo "Creating Terraform setup in $TARGET_DIR"
+fi
+
+# Navigate to target directory
+cd "$TARGET_DIR"
+
+# 1. Create main.tf
+cat > main.tf << 'EOF'
+# Main Terraform configuration file
+# Add your resources here
+
+data "aws_region" "current" {}
+
+EOF
+echo "Created main.tf"
+
+# 2. Create variables.tf
+cat > variables.tf << 'EOF'
+# Variables for Terraform configuration
+#
+variable "project" {
+  description = "Project name"
+  type        = string
+  default     = "<Project Name>"
+}
+
+variable "region" {
+  description = "AWS region to deploy resources"
+  type        = string
+  default     = "ap-south-1"
+}
+
+# Add more variables as needed
+EOF
+echo "Created variables.tf"
+
+# 3. Create docker-compose.yml
+cat > docker-compose.yml << 'EOF'
+version: '3.7'
+
+services:
+  terraform:
+    image: hashicorp/terraform:1.11
+    volumes:
+      - .:/infra
+      - ~/.aws:/root/.aws
+    working_dir: /infra
+    environment:
+      - AWS_PROFILE=${AWS_PROFILE}
+EOF
+echo "Created docker-compose.yml"
+
+# 4. Create backend-prod.conf
+cat > backend-prod.conf << 'EOF'
+bucket         = "YOUR_TERRAFORM_STATE_BUCKET-prod"
+key            = "YOUR_PROJECT_NAME/terraform.tfstate"
+region         = "us-west-2"
+encrypt        = true
+EOF
+echo "Created backend-prod.conf"
+
+# 5. Create backend-staging.conf
+cat > backend-staging.conf << 'EOF'
+bucket         = "YOUR_TERRAFORM_STATE_BUCKET-staging"
+key            = "YOUR_PROJECT_NAME/terraform.tfstate"
+region         = "us-west-2"
+encrypt        = true
+EOF
+echo "Created backend-staging.conf"
+
+# 6. Create locals.tf
+cat > locals.tf << 'EOF'
+# Local variables for Terraform configuration
+
+locals {
+
+  prefix = "${var.project}-${terraform.workspace}"
+
+  # Common tags for all resources
+  common_tags = {
+    environment        = terraform.workspace
+    project            = var.project
+    managedBy          = "Terraform"
+    cost_center        = "${var.project}-${terraform.workspace}"
+    "cost::allocation" = "${var.project}-${terraform.workspace}"
+
+  }
+}
+EOF
+echo "Created locals.tf"
+
+# 7. Create provider.tf
+cat > provider.tf << 'EOF'
+# Provider configuration
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.94"
+    }
+  }
+  
+  backend "s3" {
+    # Backend configuration is passed via -backend-config parameter
+    # or by using either backend-prod.conf or backend-staging.conf
+  }
+}
+
+provider "aws" {
+  region = var.region
+  
+  # Default tags applied to all resources
+  default_tags {
+    tags = local.common_tags
+  }
+}
+EOF
+echo "Created provider.tf"
+
+# 8. Create terraform.tfvars
+cat > terraform.tfvars << 'EOF'
+# Terraform variable values
+
+region      = "ap-south-1"
+
+# Add your variable values here
+EOF
+echo "Created terraform.tfvars"
+
+echo "Terraform project setup complete in $TARGET_DIR"
+echo "Run 'terraform init -backend-config=backend-[prod|staging].conf' to initialize"

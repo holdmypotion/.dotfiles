@@ -1,0 +1,310 @@
+#!/bin/bash
+
+# Timer script in bash
+# Usage: ./timer.sh [duration] [message]
+# Examples: ./timer.sh 1h30m "Break time"
+#          ./timer.sh 25m "Pomodoro session"
+#          ./timer.sh 90s "Quick break"
+
+# Default values
+DURATION=""
+MESSAGE=""
+NO_BELL=false
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+BLINK='\033[5m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+# Color thresholds
+HIGH_PERCENT=0.5
+LOW_PERCENT=0.2
+
+# Function to display help
+show_help() {
+    echo "Usage: $0 [OPTIONS] DURATION [MESSAGE]"
+    echo ""
+    echo "DURATION is the duration of your timer, a number followed by h, m, or s"
+    echo "for hours, minutes, or seconds"
+    echo ""
+    echo "MESSAGE is an optional message to display (can also use -m flag)"
+    echo ""
+    echo "Options:"
+    echo "  -m, --message TEXT    The message to display under the timer"
+    echo "  --no-bell            Do not ring the terminal bell when timer ends"
+    echo "  -h, --help           Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 1h30m"
+    echo "  $0 25m 'Break time'"
+    echo "  $0 15m30s"
+    echo "  $0 -m 'Break time' 25m"
+    echo "  $0 27m 'rahul'"
+}
+
+# Function to parse duration string
+parse_duration() {
+    local duration_str="$1"
+    local total_seconds=0
+    
+    # Remove any spaces
+    duration_str=$(echo "$duration_str" | tr -d ' ')
+    
+    # Extract hours
+    if [[ $duration_str =~ ([0-9]+)h ]]; then
+        local hours=${BASH_REMATCH[1]}
+        total_seconds=$((total_seconds + hours * 3600))
+        duration_str=${duration_str/${BASH_REMATCH[0]}/}
+    fi
+    
+    # Extract minutes
+    if [[ $duration_str =~ ([0-9]+)m ]]; then
+        local minutes=${BASH_REMATCH[1]}
+        total_seconds=$((total_seconds + minutes * 60))
+        duration_str=${duration_str/${BASH_REMATCH[0]}/}
+    fi
+    
+    # Extract seconds
+    if [[ $duration_str =~ ([0-9]+)s ]]; then
+        local seconds=${BASH_REMATCH[1]}
+        total_seconds=$((total_seconds + seconds))
+        duration_str=${duration_str/${BASH_REMATCH[0]}/}
+    fi
+    
+    # Check if there's any remaining unparsed text
+    if [[ -n "$duration_str" ]]; then
+        echo "Error: Invalid duration format: $1" >&2
+        echo "Please use format like: 1h30m, 25m, 90s" >&2
+        return 1
+    fi
+    
+    if [[ $total_seconds -eq 0 ]]; then
+        echo "Error: Timer duration cannot be zero" >&2
+        return 1
+    fi
+    
+    echo "$total_seconds"
+    return 0
+}
+
+# Function to format time as HH:MM:SS
+format_time() {
+    local total_seconds=$1
+    local hours=$((total_seconds / 3600))
+    local minutes=$(((total_seconds % 3600) / 60))
+    local seconds=$((total_seconds % 60))
+    
+    printf "%02d:%02d:%02d" "$hours" "$minutes" "$seconds"
+}
+
+# Function to get terminal dimensions
+get_terminal_size() {
+    local size=$(stty size 2>/dev/null)
+    if [[ -n "$size" ]]; then
+        echo "$size"
+    else
+        echo "24 80"  # Default fallback
+    fi
+}
+
+# Function to center text
+center_text() {
+    local text="$1"
+    local width=$(get_terminal_size | cut -d' ' -f2)
+    local text_length=${#text}
+    local padding=$(( (width - text_length) / 2 ))
+    
+    if [[ $padding -gt 0 ]]; then
+        printf "%*s%s\n" "$padding" "" "$text"
+    else
+        echo "$text"
+    fi
+}
+
+# Function to clear screen and position cursor
+clear_screen() {
+    clear
+    local height=$(get_terminal_size | cut -d' ' -f1)
+    local middle=$((height / 2))
+    
+    # Move cursor to middle of screen
+    for ((i=0; i<middle-2; i++)); do
+        echo
+    done
+}
+
+# Function to get color based on percentage remaining
+get_color() {
+    local percentage=$1
+    
+    if (( $(echo "$percentage > $HIGH_PERCENT" | bc -l) )); then
+        echo "$GREEN"
+    elif (( $(echo "$percentage > $LOW_PERCENT" | bc -l) )); then
+        echo "$YELLOW"
+    else
+        echo "$RED"
+    fi
+}
+
+# Function to create simple ASCII art numbers
+ascii_time() {
+    local time_str="$1"
+    local color="$2"
+    
+    echo -e "${color}${BOLD}"
+    center_text "╔══════════════════════════════════════════╗"
+    center_text "║                                          ║"
+    center_text "║              $time_str              ║"
+    center_text "║                                          ║"
+    center_text "╚══════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+# Function to ring bell
+ring_bell() {
+    if [[ "$NO_BELL" != "true" ]]; then
+        echo -e "\a"
+    fi
+}
+
+# Function to display message with proper centering
+display_message() {
+    local message="$1"
+    if [[ -n "$message" ]]; then
+        echo ""
+        echo -e "${CYAN}${BOLD}"
+        center_text "$message"
+        echo -e "${NC}"
+    fi
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -m|--message)
+            MESSAGE="$2"
+            shift 2
+            ;;
+        --no-bell)
+            NO_BELL=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            show_help
+            exit 1
+            ;;
+        *)
+            if [[ -z "$DURATION" ]]; then
+                DURATION="$1"
+            elif [[ -z "$MESSAGE" ]]; then
+                # If no -m flag was used, treat second argument as message
+                MESSAGE="$1"
+            else
+                echo "Error: Too many arguments provided" >&2
+                echo "Usage: $0 [OPTIONS] DURATION [MESSAGE]" >&2
+                exit 1
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Check if duration is provided
+if [[ -z "$DURATION" ]]; then
+    echo -e "${RED}Error: Please specify a timer duration${NC}" >&2
+    echo "Use format like: 1h30m, 25m, 90s" >&2
+    exit 1
+fi
+
+# Parse the duration
+total_seconds=$(parse_duration "$DURATION")
+if [[ $? -ne 0 ]]; then
+    exit 1
+fi
+
+echo "Starting timer for $(format_time $total_seconds)"
+if [[ -n "$MESSAGE" ]]; then
+    echo "Message: $MESSAGE"
+fi
+echo "Press Ctrl+C to quit"
+echo ""
+
+# Store the original total for percentage calculation
+original_total=$total_seconds
+
+# Main timer loop
+while [[ $total_seconds -gt 0 ]]; do
+    clear_screen
+    
+    # Calculate percentage remaining
+    percentage=$(echo "scale=2; $total_seconds / $original_total" | bc -l)
+    color=$(get_color "$percentage")
+    
+    # Display timer
+    time_display=$(format_time $total_seconds)
+    ascii_time "$time_display" "$color"
+    
+    # Display message if provided
+    if [[ -n "$MESSAGE" ]]; then
+        echo ""
+        center_text "$MESSAGE"
+    fi
+    
+    # Wait one second
+    sleep 1
+    
+    # Decrement counter
+    total_seconds=$((total_seconds - 1))
+done
+
+# Timer finished
+clear_screen
+
+# Flash the screen and ring bell
+for ((i=0; i<5; i++)); do
+    clear_screen
+    echo -e "${WHITE}${BOLD}${BLINK}"
+    ascii_time "00:00:00" "$RED"
+    echo -e "${NC}"
+    
+    if [[ -n "$MESSAGE" ]]; then
+        echo ""
+        center_text "$MESSAGE"
+    fi
+    
+    center_text "⏰ TIME'S UP! ⏰"
+    ring_bell
+    sleep 1
+    
+    clear_screen
+    sleep 0.5
+done
+
+# Final display
+clear_screen
+echo -e "${RED}${BOLD}${BLINK}"
+ascii_time "00:00:00" "$RED"
+echo -e "${NC}"
+
+if [[ -n "$MESSAGE" ]]; then
+    echo ""
+    center_text "$MESSAGE"
+fi
+
+center_text "⏰ TIME'S UP! ⏰"
+center_text "Press any key to exit..."
+
+# Wait for user input
+read -n 1 -s
+
+echo "Timer finished!"
