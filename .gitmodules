@@ -1,3 +1,6 @@
 [submodule ".config/nvim"]
 	path = .config/nvim
 	url = git@github.com-personal:holdmypotion/nvim.git
+[submodule "/Users/loona-mac/.dotfiles/.config/nvim"]
+	path = /Users/loona-mac/.dotfiles/.config/nvim
+	url = https://github.com/holdmypotion/nvim.git
