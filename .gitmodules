@@ -4,3 +4,10 @@
 [submodule "/Users/loona-mac/.dotfiles/.config/nvim"]
 	path = /Users/loona-mac/.dotfiles/.config/nvim
 	url = https://github.com/holdmypotion/nvim.git
+[submodule ".tmux/plugins/vim-tmux-navigator"]
+	path = .tmux/plugins/vim-tmux-navigator
+	url = https://git::@github.com/christoomey/vim-tmux-navigator
+[submodule ".tmux/plugins/tpm"]
+	path = .tmux/plugins/tpm
+	url = https://github.com/tmux-plugins/tpm
+
