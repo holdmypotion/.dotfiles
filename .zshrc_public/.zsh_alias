@@ -48,6 +48,7 @@ alias pconf="vim ~/.zshrc_private/"
 alias config="cd ~/.config/nvim/; vim ."
 alias so="source ~/.zshrc"
 alias t="tmux"
+alias wipe="clear && tmux clear-history"
 
 ## Python aliases
 alias python="python3.13"
@@ -60,9 +61,6 @@ alias p13="python3.13"
 alias pip11="pip3.11"
 alias pip12="pip3.12"
 
-
-# Tmux aliases
-alias wipe="clear && tmux clear-history"
 
 function git_per() {
   git config user.name "holdmypotion"

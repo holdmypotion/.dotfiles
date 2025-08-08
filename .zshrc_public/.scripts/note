@@ -1,0 +1,101 @@
+#!/bin/bash
+
+# Default values
+type="meeting"
+name=""
+type_set_from_positional=false
+
+# Argument parsing loop
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --type)
+            if [ -n "$2" ]; then
+                type="$2"
+                shift 2
+            else
+                echo "Error: --type requires a value." >&2
+                exit 1
+            fi
+            ;;
+        --name)
+            if [ -n "$2" ]; then
+                name="$2"
+                shift 2
+            else
+                echo "Error: --name requires a value." >&2
+                exit 1
+            fi
+            ;;
+        -h|--help)
+            echo "Usage: $0 [--type <type>] [name...]"
+            echo "  <type> can be meeting, resource, or scratch."
+            echo "  If name is not provided via --name, all remaining arguments are treated as the name."
+            exit 0
+            ;;
+        *)
+            # Handle positional arguments
+            # The first positional argument could be the type, if it's a valid type and type is still default
+            if [[ "$1" == "meeting" || "$1" == "resource" || "$1" == "scratch" ]] && [ "$type_set_from_positional" = false ] && [ "$type" == "meeting" ]; then
+                type="$1"
+                type_set_from_positional=true
+            else
+                # The rest are the name
+                if [ -z "$name" ]; then
+                    name="$1"
+                else
+                    name="$name $1"
+                fi
+            fi
+            shift 1
+            ;;
+    esac
+done
+
+# Check if name is provided
+if [ -z "$name" ]; then
+    echo "Error: name is a required parameter."
+    echo "Usage: $0 [--type <type>] [name...]"
+    exit 1
+fi
+
+# Sanitize the name for the filename (replace spaces with underscores)
+safe_name=$(echo "$name" | tr ' ' '_')
+
+# Define the base directory
+BASE_DIR="$HOME/personal/White-Room/vault"
+
+# Define the directory and filename based on type
+case "$type" in
+    meeting)
+        NOTES_DIR="$BASE_DIR/Hackerrank/Meeting_Notes"
+        ;;
+    resource)
+        NOTES_DIR="$BASE_DIR/Hackerrank/Resources"
+        ;;
+    scratch)
+        NOTES_DIR="$BASE_DIR/Scratch"
+        ;;
+    *)
+        echo "Error: Invalid type '$type'. Allowed types are meeting, resource, scratch." >&2
+        exit 1
+        ;;
+esac
+
+
+FILENAME="${safe_name}.md"
+FILE_PATH="$NOTES_DIR/$FILENAME"
+
+# Create the directory if it doesn't exist
+mkdir -p "$NOTES_DIR"
+
+# If file doesn't exist, create it with date header
+if [ ! -f "$FILE_PATH" ]; then
+    echo "# $(date +%Y-%m-%d)" > "$FILE_PATH"
+else
+    # If file exists, append date header
+    echo "" >> "$FILE_PATH"
+    echo "# $(date +%Y-%m-%d)" >> "$FILE_PATH"
+fi
+
+# Open the file in Vim
+nvim "$FILE_PATH"

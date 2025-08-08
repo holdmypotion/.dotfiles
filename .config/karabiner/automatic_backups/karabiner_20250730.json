@@ -4,7 +4,7 @@
             "complex_modifications": {
                 "rules": [
                     {
-                        "description": "Change right_control + i/j/k/l to Arrows",
+                        "description": "Change left_control + i/j/k/l to Arrows",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -86,45 +86,6 @@
                     }
                 ]
             },
-            "devices": [
-                {
-                    "identifiers": {
-                        "is_keyboard": true,
-                        "product_id": 835,
-                        "vendor_id": 1452
-                    },
-                    "simple_modifications": [
-                        {
-                            "from": { "key_code": "caps_lock" },
-                            "to": [{ "key_code": "right_control" }]
-                        }
-                    ]
-                },
-                {
-                    "identifiers": {
-                        "is_keyboard": true,
-                        "product_id": 785,
-                        "vendor_id": 13364
-                    },
-                    "simple_modifications": [
-                        {
-                            "from": { "key_code": "caps_lock" },
-                            "to": [{ "key_code": "right_control" }]
-                        }
-                    ],
-                    "treat_as_built_in_keyboard": true
-                },
-                {
-                    "identifiers": {
-                        "is_keyboard": true,
-                        "is_pointing_device": true,
-                        "product_id": 785,
-                        "vendor_id": 13364
-                    },
-                    "ignore": false,
-                    "treat_as_built_in_keyboard": true
-                }
-            ],
             "name": "Default profile",
             "selected": true,
             "simple_modifications": [

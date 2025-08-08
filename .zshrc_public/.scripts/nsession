@@ -1,8 +1,9 @@
-#!/bin/bash
+source ~/.zshrc_private/.search_paths
+
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
-    selected=$(find ~/vault ~/workspace ~/personal ~/.config ~/White_Room ~/personal/open_source /Volumes/Silo/personal /Volumes/Silo/scaler ~/open_source/ ~/personal/neovim/ -mindepth 1 -maxdepth 1 -type d | fzf)
+    selected=$(find TS_SEARCH_PATHS -mindepth 1 -maxdepth 1 -type d | fzf)
 fi
 if [[ -z $selected ]]; then
     exit 0

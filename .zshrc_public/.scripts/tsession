@@ -9,7 +9,12 @@ PANE_CACHE_FILE="$PANE_CACHE_DIR/panes.cache"
 # ------------------------
 # # file: ~/.config/tsession/tsession.conf
 # # If set this override the default TS_SEARCH_PATHS (~/ ~/personal ~/personal/dev/env/.config)
-TS_SEARCH_PATHS=(~/.dotfiles ~/.dotfiles/.config ~/vault ~/workspace ~/personal ~/.config ~/White_Room ~/personal/open_source /Volumes/Silo/personal /Volumes/Silo/scaler ~/open_source/ ~/personal/neovim/)
+
+
+# We'll get the TS_SEARCH_PATHS from here
+source ~/.zshrc_private/.search_paths
+
+# TS_SEARCH_PATHS=(~/.dotfiles ~/.dotfiles/.config ~/vault ~/workspace ~/personal ~/.config ~/White_Room ~/personal/open_source /Volumes/Silo/personal /Volumes/Silo/scaler ~/open_source/ ~/personal/neovim/)
 # # If set this add additional search paths to the default TS_SEARCH_PATHS
 # # The number prefix is the depth for the Path [OPTIONAL]
 # TS_EXTRA_SEARCH_PATHS=(~/ghq:3 ~/Git:3 ~/.config:2)
