@@ -29,3 +29,8 @@ macos-option-as-alt = true
 # color13 = #cc00ff
 # color14 = #08e1d7
 # color15 = #d9ff00
+
+## Quick Terminal
+quick-terminal-position = right
+quick-terminal-animation-duration = 0
+keybind = global:alt+n=toggle_quick_terminal
