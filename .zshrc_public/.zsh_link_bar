@@ -17,7 +17,11 @@ function lbadd() {
   return 0
  fi
 
- sed -i "" "s/alias{$1}-link{.*}/alias{$1}-link{$2}-profile{$3}/" $links_file
+ if [[ "$OSTYPE" == "darwin"* ]]; then
+  sed -i "" "s/alias{$1}-link{.*}/alias{$1}-link{$2}-profile{$3}/" "$links_file"
+ else
+  sed -i "s/alias{$1}-link{.*}/alias{$1}-link{$2}-profile{$3}/" "$links_file"
+ fi
  else
  echo "alias{$1}-link{$2}-profile{$3}" >> $links_file
  fi
@@ -37,10 +41,15 @@ function lbopen() {
  # To open in Chrome
  # open -a "Google Chrome" -n --args --profile-directory=$profile $link
 
- # To open in ARC
- if [ -n "$profile" ]; then
-  arc-cli select-space-name $profile
+ # To open in ARC (macOS) or default browser (Linux)
+ if command -v arc-cli >/dev/null 2>&1; then
+  if [ -n "$profile" ]; then
+   arc-cli select-space-name $profile
+  fi
+  arc-cli new-tab $link
+ elif command -v xdg-open >/dev/null 2>&1; then
+  xdg-open "$link"
+ elif command -v open >/dev/null 2>&1; then
+  open "$link"
  fi
-
- arc-cli new-tab $link
 }

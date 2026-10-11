@@ -1,3 +1,6 @@
+# Machine-local pre-init hook (must run before p10k-instant-prompt if wrapping shell with `exec`)
+[[ -f "$HOME/.zshrc_private/.zsh_pre" ]] && source "$HOME/.zshrc_private/.zsh_pre"
+
 # p10k-instant-prompt
 
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
@@ -38,52 +41,60 @@ zstyle ':fzf-tab:*' switch-group '<' '>'
 
 source $ZSH/oh-my-zsh.sh
 
-intel() {
-  arch -x86_64 $@
-}
-
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  intel() {
+    arch -x86_64 "$@"
+  }
+fi
 
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 mtr='PATH=/usr/local/sbin:$PATH sudo mtr'
 
-export PATH="$PATH:/Users/loona-mac/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
 
-
-if [ -f "/Users/loona-mac/.config/fabric/fabric-bootstrap.inc" ]; then . "/Users/loona-mac/.config/fabric/fabric-bootstrap.inc"; fi
+if [[ -f "$HOME/.config/fabric/fabric-bootstrap.inc" ]]; then
+  . "$HOME/.config/fabric/fabric-bootstrap.inc"
+fi
 
 alias cpd='find ~/workspace/downloads/ | fzf | xargs -I {} cp {} .'
 
 alias ls='eza --icons=always'
-eval "$(zoxide init --cmd cd zsh)"
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init --cmd cd zsh)"
 
 export SCRIPTS="$HOME/.zshrc_public/.scripts/"
 export PATH="$PATH:$SCRIPTS"
 
+[[ -d "$HOME/.console-ninja/.bin" ]] && export PATH="$HOME/.console-ninja/.bin:$PATH"
 
-PATH=~/.console-ninja/.bin:$PATH
 # pnpm
-export PNPM_HOME="/Users/loona-mac/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export PNPM_HOME="$HOME/Library/pnpm"
+else
+  export PNPM_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/pnpm"
+fi
+if [[ -d "$PNPM_HOME" ]]; then
+  case ":$PATH:" in
+    *":$PNPM_HOME:"*) ;;
+    *) export PATH="$PNPM_HOME:$PATH" ;;
+  esac
+fi
 # pnpm end
 
 # opencode
-export PATH=/Users/loona-mac/.opencode/bin:$PATH
-
-for file in $HOME/.zshrc_*/*(ND.); do
-  source "$file"
-done
+[[ -d "$HOME/.opencode/bin" ]] && export PATH="$HOME/.opencode/bin:$PATH"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 [[ -s "$HOME/.avn/bin/avn.sh" ]] && source "$HOME/.avn/bin/avn.sh" # load avn
-export NVM_DIR="$HOME/.nvm"
-[ -s "$(brew --prefix nvm)/nvm.sh" ] && \. "$(brew --prefix nvm)/nvm.sh"
-[ -s "$(brew --prefix nvm)/etc/bash_completion.d/nvm" ] && \. "$(brew --prefix nvm)/etc/bash_completion.d/nvm"
+if command -v brew >/dev/null 2>&1; then
+  brew_nvm_prefix="$(brew --prefix nvm 2>/dev/null)"
+  [ -n "$brew_nvm_prefix" ] && [ -s "$brew_nvm_prefix/nvm.sh" ] && \. "$brew_nvm_prefix/nvm.sh"
+  [ -n "$brew_nvm_prefix" ] && [ -s "$brew_nvm_prefix/etc/bash_completion.d/nvm" ] && \. "$brew_nvm_prefix/etc/bash_completion.d/nvm"
+  unset brew_nvm_prefix
+fi
 
-# Created by `pipx` on 2025-07-31 06:44:34
-export PATH="$PATH:/Users/rahul/.local/bin"
+for file in $HOME/.zshrc_public/*(ND.) $HOME/.zshrc_private/*(ND.); do
+  source "$file"
+done
