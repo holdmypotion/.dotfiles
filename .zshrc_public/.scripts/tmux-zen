@@ -1,0 +1,60 @@
+#!/bin/bash
+# tmux-zen: Toggle centered "Zen Mode" (no-neck-pain layout) in tmux
+set -euo pipefail
+
+# Desired width for the center pane (default: 120 or passed as first argument)
+ZEN_WIDTH="${1:-120}"
+
+window_id=$(tmux display-message -p "#{window_id}")
+current_pane=$(tmux display-message -p "#{pane_id}")
+window_width=$(tmux display-message -p "#{window_width}")
+
+# Check if Zen Mode is currently active in this window
+is_zen=$(tmux show-option -w -v -t "$window_id" @zen_mode 2>/dev/null || echo "0")
+
+if [ "$is_zen" = "1" ]; then
+    # Toggle OFF: Kill left and right padding panes
+    left_pane=$(tmux show-option -w -v -t "$window_id" @zen_left 2>/dev/null || true)
+    right_pane=$(tmux show-option -w -v -t "$window_id" @zen_right 2>/dev/null || true)
+    main_pane=$(tmux show-option -w -v -t "$window_id" @zen_main 2>/dev/null || true)
+
+    [ -n "$left_pane" ] && tmux kill-pane -t "$left_pane" 2>/dev/null || true
+    [ -n "$right_pane" ] && tmux kill-pane -t "$right_pane" 2>/dev/null || true
+
+    tmux set-option -w -u -t "$window_id" @zen_mode 2>/dev/null || true
+    tmux set-option -w -u -t "$window_id" @zen_left 2>/dev/null || true
+    tmux set-option -w -u -t "$window_id" @zen_right 2>/dev/null || true
+    tmux set-option -w -u -t "$window_id" @zen_main 2>/dev/null || true
+
+    if [ -n "$main_pane" ]; then
+        tmux select-pane -t "$main_pane" 2>/dev/null || true
+    fi
+else
+    # Toggle ON: Check if there is enough window width
+    min_width=$((ZEN_WIDTH + 10))
+    if [ "$window_width" -le "$min_width" ]; then
+        tmux display-message "Window width (${window_width} cols) too narrow for Zen Mode (${ZEN_WIDTH} cols)"
+        exit 0
+    fi
+
+    pad_width=$(( (window_width - ZEN_WIDTH) / 2 ))
+
+    # Split left padding pane (before current pane, horizontally)
+    left_pane=$(tmux split-window -d -h -b -l "$pad_width" -t "$current_pane" -P -F "#{pane_id}" "tail -f /dev/null")
+
+    # Split right padding pane (after current pane, horizontally)
+    right_pane=$(tmux split-window -d -h -l "$pad_width" -t "$current_pane" -P -F "#{pane_id}" "tail -f /dev/null")
+
+    # Disable input on side panes
+    tmux select-pane -t "$left_pane" -d -T "zen-left" 2>/dev/null || true
+    tmux select-pane -t "$right_pane" -d -T "zen-right" 2>/dev/null || true
+
+    # Record state in window options
+    tmux set-option -w -t "$window_id" @zen_mode 1
+    tmux set-option -w -t "$window_id" @zen_left "$left_pane"
+    tmux set-option -w -t "$window_id" @zen_right "$right_pane"
+    tmux set-option -w -t "$window_id" @zen_main "$current_pane"
+
+    # Ensure main pane remains focused
+    tmux select-pane -t "$current_pane"
+fi
