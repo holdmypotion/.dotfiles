@@ -9,6 +9,9 @@ foreground = #00d4b1
 cursor-color = #00d4b1
 background-opacity = 0.9
 macos-option-as-alt = true
+clipboard-read = allow
+clipboard-write = allow
+copy-on-select = clipboard
 # selection-background = #311b92
 # border-color = #00d4b1
 

@@ -88,13 +88,20 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 [[ -s "$HOME/.avn/bin/avn.sh" ]] && source "$HOME/.avn/bin/avn.sh" # load avn
-if command -v brew >/dev/null 2>&1; then
+if [[ -d "/opt/homebrew/opt/nvm" ]]; then
+  brew_nvm_prefix="/opt/homebrew/opt/nvm"
+elif [[ -d "/usr/local/opt/nvm" ]]; then
+  brew_nvm_prefix="/usr/local/opt/nvm"
+elif command -v brew >/dev/null 2>&1; then
   brew_nvm_prefix="$(brew --prefix nvm 2>/dev/null)"
-  [ -n "$brew_nvm_prefix" ] && [ -s "$brew_nvm_prefix/nvm.sh" ] && \. "$brew_nvm_prefix/nvm.sh"
-  [ -n "$brew_nvm_prefix" ] && [ -s "$brew_nvm_prefix/etc/bash_completion.d/nvm" ] && \. "$brew_nvm_prefix/etc/bash_completion.d/nvm"
+fi
+if [[ -n "$brew_nvm_prefix" ]]; then
+  [ -s "$brew_nvm_prefix/nvm.sh" ] && \. "$brew_nvm_prefix/nvm.sh"
+  [ -s "$brew_nvm_prefix/etc/bash_completion.d/nvm" ] && \. "$brew_nvm_prefix/etc/bash_completion.d/nvm"
   unset brew_nvm_prefix
 fi
 
 for file in $HOME/.zshrc_public/*(ND.) $HOME/.zshrc_private/*(ND.); do
+  [[ "${file:t}" == ".zsh_pre" ]] && continue
   source "$file"
 done
