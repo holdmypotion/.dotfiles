@@ -8,7 +8,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 export ZSH="$HOME/.oh-my-zsh"
-export EDITOR='vim'
+export EDITOR='nvim'
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 plugins=(
@@ -51,6 +51,10 @@ fi
 
 mtr='PATH=/usr/local/sbin:$PATH sudo mtr'
 
+# Keep PATH entries unique (prevents duplicate entries across tmux and nested shells)
+typeset -U path PATH
+path=(${path%/})
+
 export PATH="$HOME/.local/bin:$PATH"
 
 if [[ -f "$HOME/.config/fabric/fabric-bootstrap.inc" ]]; then
@@ -62,7 +66,7 @@ alias cpd='find ~/workspace/downloads/ | fzf | xargs -I {} cp {} .'
 alias ls='eza --icons=always'
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init --cmd cd zsh)"
 
-export SCRIPTS="$HOME/.zshrc_public/.scripts/"
+export SCRIPTS="$HOME/.zshrc_public/.scripts"
 export PATH="$PATH:$SCRIPTS"
 
 [[ -d "$HOME/.console-ninja/.bin" ]] && export PATH="$HOME/.console-ninja/.bin:$PATH"

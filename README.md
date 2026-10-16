@@ -5,9 +5,7 @@ My personal dotfiles.
 ## Installation
 
 ```bash
-git clone https://github.com/rahulsharma/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
-./install.sh
+git clone --recurse-submodules https://github.com/holdmypotion/.dotfiles.git ~/.dotfiles
 ```
 
 ## Structure
