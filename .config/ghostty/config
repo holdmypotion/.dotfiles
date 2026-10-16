@@ -37,3 +37,4 @@ copy-on-select = clipboard
 quick-terminal-position = right
 quick-terminal-animation-duration = 0
 keybind = global:alt+n=toggle_quick_terminal
+keybind = shift+enter=text:\n

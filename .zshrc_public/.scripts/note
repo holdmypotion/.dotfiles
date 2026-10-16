@@ -35,7 +35,7 @@ while [ "$#" -gt 0 ]; do
         *)
             # Handle positional arguments
             # The first positional argument could be the type, if it's a valid type and type is still default
-            if [[ "$1" == "meeting" || "$1" == "resource" || "$1" == "feedback" || "$1" == "scratch" ]] && [ "$type_set_from_positional" = false ] && [ "$type" == "meeting" ]; then
+            if [[ "$1" == "meeting" || "$1" == "resource" || "$1" == "feedback" || "$1" == "scratch" || "$1" == "quote" ]] && [ "$type_set_from_positional" = false ] && [ "$type" == "meeting" ]; then
                 type="$1"
                 type_set_from_positional=true
             else
@@ -77,6 +77,9 @@ case "$type" in
         ;;
     scratch)
         NOTES_DIR="$BASE_DIR/Scratch"
+        ;;
+    quote)
+        NOTES_DIR="$BASE_DIR/Quotes"
         ;;
     *)
         echo "Error: Invalid type '$type'. Allowed types are meeting, resource, feedback, scratch." >&2
