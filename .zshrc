@@ -15,10 +15,10 @@ plugins=(
   git
   zsh-syntax-highlighting
   zsh-autosuggestions
-  aws
   dirhistory
   fzf-tab
 )
+(( $+commands[aws] )) && plugins+=(aws)
 
 
 fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
